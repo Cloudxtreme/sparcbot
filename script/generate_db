@@ -30,8 +30,7 @@ if (-e $dbfile) {
    if ($overwrite) {
       unlink $dbfile or die "couldn't delete $dbfile: $!\n";
    } else {
-      print "$dbfile already exists! Specify --overwrite to blow away the database.\n";
-      exit 1;
+      die "$dbfile already exists! Specify --overwrite to blow away the database.\n";
    }
 }
 
