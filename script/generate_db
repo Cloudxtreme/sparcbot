@@ -1,0 +1,60 @@
+#!/usr/bin/env perl
+
+use strict;
+use warnings;
+
+use DBI;
+use DBIx::Class::Schema::Loader 'make_schema_at';
+use FindBin;
+use Getopt::Long;
+
+# This script will generate a SQLite database at the specified location
+# (or ./script/sparcbot.db by default), create the tables for the appliation,
+# and generate DBIx::Class result modules for the schema.
+
+
+my $generate_ddl = <<'EOF';
+CREATE TABLE Beer30Subscription (channel TEXT PRIMARY KEY NOT NULL);
+EOF
+
+
+# parse command line arguments
+my $dbfile    = "$FindBin::Bin/sparcbot.db";
+my $overwrite = undef;
+GetOptions('dbfile=s'  => \$dbfile,
+           'overwrite' => \$overwrite
+) or die "usage: ./generate_db [--dbfile <dbfile>] [--overwrite]\n";
+
+# if the dbfile already exists, don't clobber it without confirmation
+if (-e $dbfile) {
+   if ($overwrite) {
+      unlink $dbfile or die "couldn't delete $dbfile: $!\n";
+   } else {
+      print "$dbfile already exists! Specify --overwrite to blow away the database.\n";
+      exit 1;
+   }
+}
+
+# connect to the SQLite db
+my $dsn = "dbi:SQLite:dbname=$dbfile";
+my $dbh = DBI->connect(
+   $dsn, '', '', { RaiseError => 1, sqlite_unicode => 1 }
+) or die "$DBI::errstr\n";
+
+
+# create tables
+if ($dbh->do($generate_ddl) < 0) {
+   die "failed to set up database: $DBI::errstr";
+}
+print "sqlite db generated at $dbfile\n";
+
+# generate perl DBIx classes (Schema::Loader so pro)
+my $schema = make_schema_at(
+   'SparcBot::DB::Schema',
+   {
+      dump_directory => "$FindBin::Bin/../lib",
+      generate_pod   => 0
+   },
+   [ $dsn, '', '' ]
+);
+print "DBIx classes created at $schema\n";

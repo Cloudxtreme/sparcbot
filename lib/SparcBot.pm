@@ -1,9 +1,20 @@
 package SparcBot;
 use Mojo::Base 'Mojolicious';
 use Mojo::Home;
+use SparcBot::DB::Schema;
 
 has home => sub {
    return Mojo::Home->new->detect;
+};
+
+has db => sub {
+   my $schema = SparcBot::DB::Schema->connect(
+      'dbi:SQLite:dbname=' . shift->config->{dbfile},
+      '',
+      '',
+      { sqlite_unicode => 1 }
+   ) or die "failed to connect to database\n";
+   return $schema;
 };
 
 sub load_config {
@@ -15,12 +26,14 @@ sub load_config {
    $self->plugin(Config => {
       file => $configfile,
       default => {
-         beer30_url => 'https://beer30.sparcedge.com/status'
+         beer30_url  => 'https://beer30.sparcedge.com/status',
+         dbfile      => $self->home->rel_file('sparcbot.db'),
       }
    });
 
-   unless ($self->config->{webhook_url})   { die "webhook_url missing from config file\n" };
-   unless ($self->config->{slack_token})   { die "slack_token missing from config file\n" };
+   foreach my $key (qw/webhook_url slack_token/) {
+      unless ($self->config->{$key}) { die "$key missing from config file\n" };
+   }
 }
 
 sub startup {
