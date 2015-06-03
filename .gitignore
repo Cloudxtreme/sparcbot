@@ -1,2 +1,2 @@
-script/config.pl
+config/config.pl
 **/*.db

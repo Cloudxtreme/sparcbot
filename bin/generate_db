@@ -9,7 +9,7 @@ use FindBin;
 use Getopt::Long;
 
 # This script will generate a SQLite database at the specified location
-# (or ./script/sparcbot.db by default), create the tables for the appliation,
+# (or ../config/sparcbot.db by default), create the tables for the appliation,
 # and generate DBIx::Class result modules for the schema.
 
 
@@ -19,7 +19,7 @@ EOF
 
 
 # parse command line arguments
-my $dbfile    = "$FindBin::Bin/sparcbot.db";
+my $dbfile    = "$FindBin::Bin/../config/sparcbot.db";
 my $overwrite = undef;
 GetOptions('dbfile=s'  => \$dbfile,
            'overwrite' => \$overwrite

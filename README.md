@@ -11,14 +11,14 @@ Install the necessary dependencies:
 
 Generate the SQLite database:
 
-`./script/generate_db`
+`./bin/generate_db`
 
 Configuration
 ----------------------
-Copy `script/config.sample.pl` to `script/config.pl` and edit the new file. At
+Copy `config/config.sample.pl` to `config/config.pl` and edit the new file. At
 the very least, you'll need to provide the authentication token of your Slack
 integration and the URL of your Slack web hook.
 
 Running the Server
 ----------------------
-In the parent folder of the project, run `./script/sparcbot daemon -l http://0.0.0.0:3000 -m production`
+In the parent folder of the project, run `./bin/sparcbot daemon -l http://0.0.0.0:3000 -m production`

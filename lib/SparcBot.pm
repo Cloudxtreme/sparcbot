@@ -20,14 +20,14 @@ has db => sub {
 sub load_config {
    my $self = shift;
 
-   my $configfile = $self->home->rel_file('config.pl');
+   my $configfile = $self->home->rel_file('../config/config.pl');
    unless (-r $configfile) { die "failed to read config file $configfile\n" };
 
    $self->plugin(Config => {
       file => $configfile,
       default => {
          beer30_url  => 'https://beer30.sparcedge.com/status',
-         dbfile      => $self->home->rel_file('sparcbot.db'),
+         dbfile      => $self->home->rel_file('../config/sparcbot.db'),
       }
    });
 
