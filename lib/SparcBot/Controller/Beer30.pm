@@ -55,7 +55,7 @@ sub _subscribe {
 
    my $subscription = $self->db->resultset('Beer30Subscription')->find_or_new(channel => $channel);
    if ($subscription->in_storage) {
-      die "#$channel is already subscribed to Beer30 updates\n";
+      die "$channel is already subscribed to Beer30 updates\n";
    }
 
    $subscription->insert;
@@ -68,7 +68,7 @@ sub _unsubscribe {
 
    my $subscription = $self->db->resultset('Beer30Subscription')->find_or_new(channel => $channel);
    unless ($subscription->in_storage) {
-      die "#$channel is not subscribed to Beer30 updates\n";
+      die "$channel is not subscribed to Beer30 updates\n";
    }
 
    $subscription->delete;
