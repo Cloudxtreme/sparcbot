@@ -51,7 +51,7 @@ sub _ontap {
 # for changes and then push updates to each of the subscribed channels.
 sub _subscribe {
    my $self    = shift;
-   my $channel = $self->req->param('channel');
+   my $channel = '#'.$self->req->param('channel_name');
 
    my $subscription = $self->db->resultset('Beer30Subscription')->find_or_new(channel => $channel);
    if ($subscription->in_storage) {
@@ -59,12 +59,12 @@ sub _subscribe {
    }
 
    $subscription->insert;
-   $self->render(text => "#$channel subscribed to Beer30 updates");
+   $self->render(text => "$channel subscribed to Beer30 updates");
 }
 
 sub _unsubscribe {
    my $self    = shift;
-   my $channel = $self->req->param('channel');
+   my $channel = '#'.$self->req->param('channel_name');
 
    my $subscription = $self->db->resultset('Beer30Subscription')->find_or_new(channel => $channel);
    unless ($subscription->in_storage) {
@@ -72,7 +72,7 @@ sub _unsubscribe {
    }
 
    $subscription->delete;
-   $self->render(text => "#$channel unsubscribed from Beer30 updates");
+   $self->render(text => "$channel unsubscribed from Beer30 updates");
 }
 
 1;
