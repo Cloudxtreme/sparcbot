@@ -41,6 +41,8 @@ sub startup {
 
    $self->load_config;
 
+   $self->helper(db => sub { shift->app->db });
+
    my $r = $self->routes;
 
    my $if_authed = $r->under('/' => sub {

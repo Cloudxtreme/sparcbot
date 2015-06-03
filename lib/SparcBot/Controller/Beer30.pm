@@ -47,17 +47,32 @@ sub _ontap {
 }
 
 
-# Here we'll eventually implement functionality to subscribe a Slack
-# channel to Beer30 status updates. We'll have to store the subscribed
-# channel list in a database (sqlite?) and implement some kind of long-
-# running process that will poll beer30 for changes and then push updates
-# to each of the subscribed channels.
+# We still need some kind of long-running process that will poll beer30
+# for changes and then push updates to each of the subscribed channels.
 sub _subscribe {
-   die "not implemented\n";
+   my $self    = shift;
+   my $channel = $self->req->param('channel');
+
+   my $subscription = $self->db->resultset('Beer30Subscription')->find_or_new(channel => $channel);
+   if ($subscription->in_storage) {
+      die "#$channel is already subscribed to Beer30 updates\n";
+   }
+
+   $subscription->insert;
+   $self->render(text => "#$channel subscribed to Beer30 updates");
 }
 
 sub _unsubscribe {
-   die "not implemented\n";
+   my $self    = shift;
+   my $channel = $self->req->param('channel');
+
+   my $subscription = $self->db->resultset('Beer30Subscription')->find_or_new(channel => $channel);
+   unless ($subscription->in_storage) {
+      die "#$channel is not subscribed to Beer30 updates\n";
+   }
+
+   $subscription->delete;
+   $self->render(text => "#$channel unsubscribed from Beer30 updates");
 }
 
 1;
