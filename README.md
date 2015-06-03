@@ -1,11 +1,17 @@
 SparcBot
 ===============
 
-Required Perl Modules
+Installation
 ----------------------
-  * Mojolicious
-  * IO::Socket::SSL
-  * Try::Tiny
+Make sure you have a non-ancient Perl (I recommend [perlbrew](http://perlbrew.pl)).
+
+Install the necessary dependencies:
+
+`cpanm --notest Mojolicious IO::Socket::SSL Try::Tiny DBI DBIx::Class::Schema::Loader`
+
+Generate the SQLite database:
+
+`./script/generate_db`
 
 Configuration
 ----------------------
