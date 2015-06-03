@@ -53,6 +53,10 @@ sub _subscribe {
    my $self    = shift;
    my $channel = '#'.$self->req->param('channel_name');
 
+   if ($channel eq '#directmessage') {
+      $channel = '@'.$self->req->param('user_name');
+   }
+
    my $subscription = $self->db->resultset('Beer30Subscription')->find_or_new(channel => $channel);
    if ($subscription->in_storage) {
       die "$channel is already subscribed to Beer30 updates\n";
@@ -65,6 +69,10 @@ sub _subscribe {
 sub _unsubscribe {
    my $self    = shift;
    my $channel = '#'.$self->req->param('channel_name');
+
+   if ($channel eq '#directmessage') {
+      $channel = '@'.$self->req->param('user_name');
+   }
 
    my $subscription = $self->db->resultset('Beer30Subscription')->find_or_new(channel => $channel);
    unless ($subscription->in_storage) {
