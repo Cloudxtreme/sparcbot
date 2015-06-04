@@ -114,7 +114,7 @@ sub _unsubscribe {
       icon_emoji  => ':beer:',
       attachments => [{
          fallback  => "$user unsubscribed $channel from Beer30 updates",
-         color     => 'good',
+         color     => 'danger',
          title     => 'Channel unsubscribed!',
          text      => "*$channel* is now unsubscribed from Beer30 updates. To re-subscribe, type `/beer30 subscribe`.",
          mrkdwn_in => ['text'],
