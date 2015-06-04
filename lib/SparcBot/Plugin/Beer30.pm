@@ -2,8 +2,14 @@ package SparcBot::Plugin::Beer30;
 
 use Mojo::Base 'Mojolicious::Plugin';
 use Mojo::UserAgent;
+use Mojo::JSON qw/true false/;
 
 my $ua = Mojo::UserAgent->new;
+my %status_colors = (
+   STOP    => 'danger',
+   CAUTION => 'warning',
+   GO      => 'good'
+);
 
 sub register {
    my ($self, $app) = @_;
@@ -25,7 +31,29 @@ sub register {
          if (defined $last_status and $current_status ne $last_status) {
             my $rs = $app->db->resultset('Beer30Subscription');
             while (my $subscription = $rs->next) {
-               # TODO: send message to channel
+               $tx = $ua->post($app->config->{webhook_url} => json => {
+                  channel     => $subscription->channel,
+                  username    => 'Beer30 Bot',
+                  icon_emoji  => ':beer:',
+                  attachments => [{
+                     fallback => "$beerdata->{statusType}: $beerdata->{description}",
+                     color    => $status_colors{$beerdata->{statusType}},
+                     title    => "Beer30 Update: $beerdata->{statusType}",
+                     text     => $beerdata->{description},
+                     fields => [{
+                        title => 'Changed By',
+                        value => "$beerdata->{changedBy}->{firstName} $beerdata->{changedBy}->{lastName}",
+                        short => true
+                     }, {
+                        title => 'Reason',
+                        value => $beerdata->{reason} || "None",
+                        short => true
+                     }]
+                  }]
+               });
+               if (my $err = $tx->error) {
+                  print "could not post to slack: $err->{message}\n";
+               }
             }
          }
 
