@@ -52,16 +52,16 @@ sub _ontap {
 # for changes and then push updates to each of the subscribed channels.
 sub _subscribe {
    my $self    = shift;
-   my $channel = '#'.$self->req->param('channel_name');
-   my $user    = $self->req->param('user_name');
+   my $channel = $self->req->param('channel_id');
+   my $user    = $self->req->param('user_id');
 
-   if ($channel eq '#directmessage') {
-      $channel = '@'.$self->req->param('user_name');
+   if ($self->req->param('channel_name') eq 'directmessage') {
+      die "only channels can subscribe to Beer30 updates\n";
    }
 
    my $subscription = $self->db->resultset('Beer30Subscription')->find_or_new(channel => $channel);
    if ($subscription->in_storage) {
-      die "$channel is already subscribed to Beer30 updates\n";
+      die(($channel =~ /^G/ ? 'this group' : "<#$channel>") . " is already subscribed to Beer30 updates\n");
    }
 
    $subscription->insert;
@@ -72,14 +72,14 @@ sub _subscribe {
       username    => 'Beer30 Bot',
       icon_emoji  => ':beer:',
       attachments => [{
-         fallback  => "$user subscribed $channel to Beer30 updates",
+         fallback  => "<\@$user> subscribed <#$channel> to Beer30 updates",
          color     => 'good',
-         title     => 'Channel subscribed!',
-         text      => "*$channel* is now subscribed to Beer30 updates. To unsubscribe, type `/beer30 unsubscribe`.",
+         title     => ($channel =~ /^G/ ? 'Group' : 'Channel') . ' subscribed!',
+         text      => ($channel =~ /^G/ ? 'This group' : "<#$channel>") . ' is now subscribed to Beer30 updates. To unsubscribe, type `/beer30 unsubscribe`.',
          mrkdwn_in => ['text'],
          fields    => [{
             title => 'Requested By',
-            value => $user,
+            value => "<\@$user>",
             short => true
          }]
       }]
@@ -93,16 +93,16 @@ sub _subscribe {
 
 sub _unsubscribe {
    my $self    = shift;
-   my $channel = '#'.$self->req->param('channel_name');
-   my $user    = $self->req->param('user_name');
+   my $channel = $self->req->param('channel_id');
+   my $user    = $self->req->param('user_id');
 
-   if ($channel eq '#directmessage') {
-      $channel = '@'.$self->req->param('user_name');
+   if ($self->req->param('channel_name') eq 'directmessage') {
+      die "only channels can unsubscribe from Beer30 updates\n";
    }
 
    my $subscription = $self->db->resultset('Beer30Subscription')->find_or_new(channel => $channel);
    unless ($subscription->in_storage) {
-      die "$channel is not subscribed to Beer30 updates\n";
+      die(($channel =~ /^G/ ? 'this group' : "<#$channel>") . " is not subscribed to Beer30 updates\n");
    }
 
    $subscription->delete;
@@ -113,14 +113,14 @@ sub _unsubscribe {
       username    => 'Beer30 Bot',
       icon_emoji  => ':beer:',
       attachments => [{
-         fallback  => "$user unsubscribed $channel from Beer30 updates",
+         fallback  => "<\@$user> unsubscribed <#$channel> from Beer30 updates",
          color     => 'danger',
-         title     => 'Channel unsubscribed!',
-         text      => "*$channel* is now unsubscribed from Beer30 updates. To re-subscribe, type `/beer30 subscribe`.",
+         title     => ($channel =~ /^G/ ? 'Group' : 'Channel') . ' unsubscribed!',
+         text      => ($channel =~ /^G/ ? 'This group' : "<#$channel>") . ' is now unsubscribed from Beer30 updates. To re-subscribe, type `/beer30 subscribe`.',
          mrkdwn_in => ['text'],
          fields    => [{
             title => 'Requested By',
-            value => $user,
+            value => "<\@$user>",
             short => true
          }]
       }]
