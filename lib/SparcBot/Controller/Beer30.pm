@@ -19,8 +19,9 @@ sub dispatch {
          when ('ontap')       { $self->_ontap       };
          when ('subscribe')   { $self->_subscribe   };
          when ('unsubscribe') { $self->_unsubscribe };
+         when ('help')        { $self->_help        };
          default {
-            $self->render(text => 'commands: status|ontap|subscribe|unsubscribe', status => 400);
+            $self->render(text => 'commands: status|ontap|subscribe|unsubscribe|help', status => 400);
          };
       }
    } catch {
@@ -130,6 +131,14 @@ sub _unsubscribe {
    }
 
    $self->render(text => '');
+}
+
+sub _help {
+   shift->render(text =>
+      "*Available commands:* `status, ontap, subscribe, unsubscribe`\n" .
+      "Maintained by <\@cullum>\n" .
+      "Contribute on <https://github.com/cullum/sparcbot|GitHub>!"
+   );
 }
 
 1;
