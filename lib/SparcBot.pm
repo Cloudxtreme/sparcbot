@@ -13,7 +13,7 @@ has db => sub {
       'dbi:SQLite:dbname=' . shift->config->{dbfile},
       '',
       '',
-      { sqlite_unicode => 1 }
+      { sqlite_unicode => 1, RaiseError => 1 }
    ) or die "failed to connect to database\n";
    return $schema;
 };
