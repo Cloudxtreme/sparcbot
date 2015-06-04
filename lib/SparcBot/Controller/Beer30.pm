@@ -3,6 +3,7 @@ package SparcBot::Controller::Beer30;
 use Mojo::Base 'Mojolicious::Controller';
 no warnings 'experimental::smartmatch';
 use Mojo::UserAgent;
+use Mojo::JSON qw/true false/;
 use Try::Tiny;
 
 my $ua = Mojo::UserAgent->new;
@@ -52,6 +53,7 @@ sub _ontap {
 sub _subscribe {
    my $self    = shift;
    my $channel = '#'.$self->req->param('channel_name');
+   my $user    = $self->req->param('user_name');
 
    if ($channel eq '#directmessage') {
       $channel = '@'.$self->req->param('user_name');
@@ -63,12 +65,36 @@ sub _subscribe {
    }
 
    $subscription->insert;
-   $self->render(text => "$channel subscribed to Beer30 updates");
+
+   # notify channel of subscription
+   my $tx = $ua->post($self->config->{webhook_url} => json => {
+      channel     => $subscription->channel,
+      username    => 'Beer30 Bot',
+      icon_emoji  => ':beer:',
+      attachments => [{
+         fallback  => "$user subscribed $channel to Beer30 updates",
+         color     => 'good',
+         title     => 'Channel subscribed!',
+         text      => "*$channel* is now subscribed to Beer30 updates. To unsubscribe, type `/beer30 unsubscribe`.",
+         mrkdwn_in => ['text'],
+         fields    => [{
+            title => 'Requested By',
+            value => $user,
+            short => true
+         }]
+      }]
+   });
+   if (my $err = $tx->error) {
+      die "could not post to slack: $err->{message}\n";
+   }
+
+   $self->render(text => '');
 }
 
 sub _unsubscribe {
    my $self    = shift;
    my $channel = '#'.$self->req->param('channel_name');
+   my $user    = $self->req->param('user_name');
 
    if ($channel eq '#directmessage') {
       $channel = '@'.$self->req->param('user_name');
@@ -80,7 +106,30 @@ sub _unsubscribe {
    }
 
    $subscription->delete;
-   $self->render(text => "$channel unsubscribed from Beer30 updates");
+
+   # notify channel of unsubscription
+   my $tx = $ua->post($self->config->{webhook_url} => json => {
+      channel     => $subscription->channel,
+      username    => 'Beer30 Bot',
+      icon_emoji  => ':beer:',
+      attachments => [{
+         fallback  => "$user unsubscribed $channel from Beer30 updates",
+         color     => 'good',
+         title     => 'Channel unsubscribed!',
+         text      => "*$channel* is now unsubscribed from Beer30 updates. To re-subscribe, type `/beer30 subscribe`.",
+         mrkdwn_in => ['text'],
+         fields    => [{
+            title => 'Requested By',
+            value => $user,
+            short => true
+         }]
+      }]
+   });
+   if (my $err = $tx->error) {
+      die "could not post to slack: $err->{message}\n";
+   }
+
+   $self->render(text => '');
 }
 
 1;

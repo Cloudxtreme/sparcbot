@@ -38,7 +38,7 @@ sub register {
                   attachments => [{
                      fallback => "$beerdata->{statusType}: $beerdata->{description}",
                      color    => $status_colors{$beerdata->{statusType}},
-                     title    => "Beer30 Update: $beerdata->{statusType}",
+                     title    => "Status Update: $beerdata->{statusType}",
                      text     => $beerdata->{description},
                      fields => [{
                         title => 'Changed By',
