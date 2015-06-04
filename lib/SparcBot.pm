@@ -1,6 +1,7 @@
 package SparcBot;
 use Mojo::Base 'Mojolicious';
 use Mojo::Home;
+use Mojo::IOLoop;
 use SparcBot::DB::Schema;
 
 has home => sub {
@@ -26,8 +27,9 @@ sub load_config {
    $self->plugin(Config => {
       file => $configfile,
       default => {
-         beer30_url  => 'https://beer30.sparcedge.com/status',
-         dbfile      => $self->home->rel_file('../config/sparcbot.db'),
+         beer30_url           => 'https://beer30.sparcedge.com/status',
+         dbfile               => $self->home->rel_file('../config/sparcbot.db'),
+         beer30_poll_interval => 60
       }
    });
 
@@ -42,6 +44,11 @@ sub startup {
    $self->load_config;
 
    $self->helper(db => sub { shift->app->db });
+
+   # enable channel notifications for beer30 updates
+   my $interval = $self->config->{beer30_poll_interval};
+   $self->plugin('SparcBot::Plugin::Beer30');
+   Mojo::IOLoop->recurring($interval => $self->beer30->poll_and_notify);
 
    my $r = $self->routes;
 
