@@ -19,7 +19,7 @@ sub register {
          state $last_status = undef;
 
          # get current beer30 status
-         my $tx = $ua->get($app->config->{beer30_url});
+         my $tx = $ua->get($app->config->{beer30_status_url});
          if (my $err = $tx->error) {
             print "error polling Beer30 API: $err->{message}\n";
             return;

@@ -35,7 +35,7 @@ sub dispatch {
 sub _status {
    my ($self, $caller) = @_;
 
-   my $tx = $ua->get($self->config->{beer30_url});
+   my $tx = $ua->get($self->config->{beer30_status_url});
    if (my $err = $tx->error) { die "failed to access Beer30 API: $err->{message}\n" };
    my $beerstatus = $tx->res->json;
 
@@ -45,7 +45,49 @@ sub _status {
 
 # Get the current beers on tap. Is this exposed in the API?
 sub _ontap {
-   die "not implemented\n";
+   my $self    = shift;
+   my $channel = $self->req->param('channel_id');
+   my $user    = $self->req->param('user_id');
+
+   my $tx = $ua->get($self->config->{beer30_tap_url});
+   if (my $err = $tx->error) { die "failed to access Beer30 API: $err->{message}\n" };
+   my $tapdata = $tx->res->json;
+
+   # generate attachments list
+   my $attachments = [];
+   foreach my $beer (@$tapdata) {
+      push @$attachments, {
+         fallback   => "$beer->{beerName}" . ($beer->{dry} == true ? ' (dry)' : ''),
+         title      => "$beer->{beerName}" . ($beer->{dry} == true ? ' (dry)' : ''),
+         title_link => "$beer->{beerAdvocateURL}",
+         color      => $beer->{dry} == true ? 'danger' : 'good',
+         # TODO: add pictures. they are stored as base64 in the beer30 JSON API though,
+         #       so we may have to get creative.
+         fields     => [{
+            title => 'Brewery',
+            value => "$beer->{brewery}",
+            short => true
+         },{
+            title => 'Style',
+            value => "$beer->{style}",
+            short => true
+         }]
+      };
+   }
+
+   # send tap info to channel
+   $tx = $ua->post($self->config->{webhook_url} => json => {
+      channel     => $channel,
+      username    => 'Beer30 Bot',
+      icon_emoji  => ':beer:',
+      text        => "As requested by <\@$user>, the following beers are currently on tap:",
+      attachments => $attachments
+   });
+   if (my $err = $tx->error) {
+      die "could not post to slack: $err->{message}\n";
+   }
+
+   $self->render(text => '');
 }
 
 
