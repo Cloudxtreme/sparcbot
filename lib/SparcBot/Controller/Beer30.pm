@@ -90,8 +90,7 @@ sub _ontap {
 }
 
 
-# We still need some kind of long-running process that will poll beer30
-# for changes and then push updates to each of the subscribed channels.
+# subscribe the channel to beer30 updates
 sub _subscribe {
    my $self    = shift;
    my $channel = $self->req->param('channel_id');
@@ -133,6 +132,8 @@ sub _subscribe {
    $self->render(text => '');
 }
 
+
+# unsubscribe the channel from beer30 updates
 sub _unsubscribe {
    my $self    = shift;
    my $channel = $self->req->param('channel_id');
