@@ -61,8 +61,7 @@ sub _ontap {
          title      => "$beer->{beerName}" . ($beer->{dry} == true ? ' (dry)' : ''),
          title_link => "$beer->{beerAdvocateURL}",
          color      => $beer->{dry} == true ? 'danger' : 'good',
-         # TODO: add pictures. they are stored as base64 in the beer30 JSON API though,
-         #       so we may have to get creative.
+         image_url  => 'http://cdn.beeradvocate.com/im/beers' . substr($beer->{beerAdvocateURL}, rindex($beer->{beerAdvocateURL}, '/')) . '.jpg',
          fields     => [{
             title => 'Brewery',
             value => "$beer->{brewery}",
