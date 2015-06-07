@@ -18,6 +18,12 @@ sub register {
       return sub {
          state $last_status = undef;
 
+         # don't spam channels with updates on the weekends
+         my $weekday = (localtime)[6];
+         if ($weekday == 6 or $weekday == 0) {
+            return;
+         }
+
          # get current beer30 status
          my $tx = $ua->get($app->config->{beer30_status_url});
          if (my $err = $tx->error) {
