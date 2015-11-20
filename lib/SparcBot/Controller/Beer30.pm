@@ -77,7 +77,7 @@ sub _request {
       icon_emoji  => ':beer:',
       attachments => [{
          fallback  => "<\@$user_id> has requested Beer30 status be changed to $status. Reason: $reason",
-         title     => 'Status Change Requested!'
+         title     => 'Status Change Requested!',
          text      => "Beer30 status change request for $status has been submitted.",
          mrkdwn_in => ['text'],
          fields    => [{
