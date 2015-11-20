@@ -59,7 +59,7 @@ sub _request {
    die "status must be either STOP, CAUTION, or GO\n" unless ($status =~ /^(STOP|CAUTION|GO)$/);
    die "a reason must be supplied\n" unless ($reason);
 
-   my $annotated_reason = "[Beer30 Bot] User $user_name via Slack channel $channel_name has requested a status change. Reason: $reason";
+   my $annotated_reason = "$reason (from $user_name in #$channel_name)";
 
    my $tx = $ua->post($self->config->{beer30_request_url} => json => {
       userName   => $api_user,
