@@ -82,7 +82,7 @@ sub _request {
          mrkdwn_in => ['text'],
          fields    => [{
             title => 'Requested By',
-            value => "<\@$user>",
+            value => "<\@$user_id>",
             short => true
          },{
             title => 'Reason',
