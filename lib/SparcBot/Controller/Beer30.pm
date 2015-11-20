@@ -11,17 +11,18 @@ my $ua = Mojo::UserAgent->new;
 # extract command from the /beer30 arg and call appropriate function
 sub dispatch {
    my $self = shift;
-   my ($cmd) = split ' ', $self->req->param('text');
+   my ($cmd, $args) = split ' ', $self->req->param('text'), 2;
 
    try {
       for (lc $cmd) {
-         when ('status')      { $self->_status      };
-         when ('ontap')       { $self->_ontap       };
-         when ('subscribe')   { $self->_subscribe   };
-         when ('unsubscribe') { $self->_unsubscribe };
-         when ('help')        { $self->_help        };
+         when ('status')      { $self->_status           };
+         when ('request')     { $self->_request($args)   };
+         when ('ontap')       { $self->_ontap            };
+         when ('subscribe')   { $self->_subscribe        };
+         when ('unsubscribe') { $self->_unsubscribe      };
+         when ('help')        { $self->_help             };
          default {
-            $self->render(text => 'commands: status|ontap|subscribe|unsubscribe|help', status => 400);
+            $self->render(text => 'commands: status|request [status] [reason]|ontap|subscribe|unsubscribe|help', status => 400);
          };
       }
    } catch {
@@ -33,13 +34,69 @@ sub dispatch {
 # Get beer30 status and return a string to the caller. Repsonse will be
 # diplayed to user as a private Slackbot message.
 sub _status {
-   my ($self, $caller) = @_;
+   my $self = shift;
 
    my $tx = $ua->get($self->config->{beer30_status_url});
    if (my $err = $tx->error) { die "failed to access Beer30 API: $err->{message}\n" };
    my $beerstatus = $tx->res->json;
 
    $self->render(text => "$beerstatus->{statusType}: $beerstatus->{description}");
+}
+
+sub _request {
+   my ($self, $args) = @_;
+   my $channel_name = $self->req->param('channel_name');
+   my $channel_id   = $self->req->param('channel_id');
+   my $user_name    = $self->req->param('user_name');
+   my $user_id      = $self->req->param('user_id');
+   my $api_user     = $self->config->{beer30_api_user};
+   my $api_pass     = $self->config->{beer30_api_password};
+
+   my ($status, $reason) = split ' ', $args, 2;
+   $status = uc $status;
+
+   die "a status must be supplied\n" unless ($status);
+   die "status must be either STOP, CAUTION, or GO\n" unless ($status =~ /^(STOP|CAUTION|GO)$/);
+   die "a reason must be supplied\n" unless ($reason);
+
+   my $annotated_reason = "[Beer30 Bot] User $user_name via Slack channel $channel_name has requested a status change. Reason: $reason";
+
+   my $tx = $ua->post($self->config->{beer30_request_url} => json => {
+      userName   => $api_user,
+      password   => $api_pass,
+      statusType => $status,
+      reason     => $annotated_reason
+   });
+   if (my $err = $tx->error) {
+      die "could not post to Beer30 API: $err->{message}\n";
+   }
+
+   $tx = $ua->post($self->config->{webhook_url} => json => {
+      channel     => $channel_id,
+      username    => 'Beer30 Bot',
+      icon_emoji  => ':beer:',
+      attachments => [{
+         fallback  => "<\@$user_id> has requested Beer30 status be changed to $status. Reason: $reason",
+         title     => 'Status Change Requested!'
+         text      => "Beer30 status change request for $status has been submitted.",
+         mrkdwn_in => ['text'],
+         fields    => [{
+            title => 'Requested By',
+            value => "<\@$user>",
+            short => true
+         },{
+            title => 'Reason',
+            value => $reason,
+            short => true
+
+         }]
+      }]
+   });
+   if (my $err = $tx->error) {
+      die "could not post to slack: $err->{message}\n";
+   }
+
+   $self->render(text => '');
 }
 
 
