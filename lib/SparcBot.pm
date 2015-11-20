@@ -30,7 +30,8 @@ sub load_config {
          dbfile               => $self->home->rel_file('../config/sparcbot.db'),
          beer30_poll_interval => 60,
          beer30_status_url    => 'https://beer30.sparcedge.com/status',
-         beer30_tap_url       => 'https://beer30.sparcedge.com/tap'
+         beer30_tap_url       => 'https://beer30.sparcedge.com/tap',
+         beer30_request_url   => 'https://beer30.sparcedge.com/status/request'
       }
    });
 
