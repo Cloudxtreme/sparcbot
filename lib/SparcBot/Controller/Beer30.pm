@@ -234,7 +234,7 @@ sub _unsubscribe {
 
 sub _help {
    shift->render(text =>
-      "*Available commands:* `status, ontap, subscribe, unsubscribe`\n" .
+      "*Available commands:* `status, request, ontap, subscribe, unsubscribe`\n" .
       "Maintained by <\@cullum>\n" .
       "Contribute on <https://github.com/cullum/sparcbot|GitHub>!"
    );
